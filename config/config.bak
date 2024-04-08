@@ -1,0 +1,52 @@
+// 此 config 文件为模板，使用时请删除所有注释，详细解释见README.md
+{
+    "backgrounds": {
+        "background.blend": {
+            "background": "background",
+            "materials": [
+                "stripes",
+                "waves",
+                "musgrave"
+            ]
+        }
+    },
+    "camera": {},
+    "count": 200,
+    "dust": {
+        "path": "dust_volume.blend",
+        "density": {
+            "min": 0.1,
+            "max": 0.5,
+            "step": 3
+        },
+        "height": {}
+    },
+    "label": {
+        "max_overlap": 0.4
+    },
+    "materials": {
+        "materials.blend": [
+            "plastic",
+            "metal"
+        ]
+    },
+    "models": {
+        "geometries.blend": {
+            "cubes": "cube",
+            "spheres": "sphere",
+            "cones": "cone",
+            "cylinders": "cylinder"
+        },
+        "cars.blend": {
+            "targets": "car"
+        }
+    },
+    "output": {
+        "image_path": "./outputs/my_dataset/",
+        "label_path": "./outputs/my_dataset/",
+        "width": 1024,
+        "height": 748,
+        "sample": 128,
+        "format": "png"
+    }
+}

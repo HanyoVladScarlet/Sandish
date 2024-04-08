@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blender Flask Console</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap-grid.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="containermd">
+        <div class="row">
+            <div class="col-sm"></div>
+            <div class="col-sm">
+                <h1>Console</h1>
+                <div id="console">
+                </div>
+            </div>
+            <div class="col-sm"></div>
+        </div>
+        
+    </div>
+    <script type="text/javascript">
+        var text = ''
+        setInterval(function() {
+            $.ajax({
+                type: 'GET',
+                url: '/api/get-message-queue',
+                dataType: 'json',
+                data: {},
+                success: function(res) {
+                    if (res.length != 0) {
+                        new_html = [];
+                        for (var i = 0; i < res.length; i++) {
+                            item = res[i];
+                            color ='white';
+                            if (res[i]['level'] == 1) {
+                                color = '#70d470'
+                            }
+                            if (res[i]['level'] == 2) {
+                                color = '#d4d470'
+                            }
+                            if (res[i]['level'] == 1) {
+                                color = '#7070d4'
+                            }
+                            new_html.push($(`<p style="color:${color}">${res[i]['message']}</p>`));
+                        }
+                        // console.log(new_html);
+                        $('#console').empty();
+                        for (var i = 0; i < new_html.length; ++i) {
+                            $('#console').append(new_html[i]);
+                        }
+                    }
+                },
+                error: function() {
+                    console.log('error!')
+                }
+            });
+            // console.log('hao!');
+        }, 1000);
+    </script>
+</body>
+</html>
