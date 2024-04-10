@@ -2,7 +2,7 @@ import bpy
 import math
 import random
 from mathutils import Vector
-import prefab_loader as pfl
+import blender_codes.prefab_loader as pfl
 
 
 def singleton(cls):

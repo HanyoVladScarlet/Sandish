@@ -5,7 +5,6 @@ Dataset production workflow oriented for object detection in adversial weather c
 
 最初版本为 2024 年四月傻子节更新的版本，此版本修复了数据集鬼框的问题。
 
-
 ## 关于 Flask 服务器
 
 Flask 服务器存在的首要目的是为了避免 Blender Commandline 输出过多无效信息而影响有效信息输出。其次，它还服务于以下功能：
@@ -17,7 +16,6 @@ Flask 服务器存在的首要目的是为了避免 Blender Commandline 输出�
 
 Flask 将作为之后程序的入口，包括数据集生成和目标检测两个部分。
 
-
 ### 程序结构
 
 当前的 Workflow 为主要包括三大部分：
@@ -25,8 +23,6 @@ Flask 将作为之后程序的入口，包括数据集生成和目标检测两�
 1. 模型、材质等要素的导入；
 2. 参数的随机化；
 3. 渲染出图、自动化标注；
-
-
 
 ## Configuration
 

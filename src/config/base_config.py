@@ -1,6 +1,6 @@
 # Author: Lyapunov
 from config.config_loader import get_config, get_item
-from utils.logger import error
+from nefx.logger import error
 import random
 
 CONFIG = get_config()

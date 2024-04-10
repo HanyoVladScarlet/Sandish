@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap-grid.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
+
 <body>
     <div class="containermd">
         <div class="row">
@@ -18,46 +20,99 @@
             </div>
             <div class="col-sm"></div>
         </div>
-        
+        <button disabled id="b_render" onclick="beginRendering()">开始渲染</button>
+        <button disabled id="e_render" onclick="endRendering()">中止渲染</button>
     </div>
     <script type="text/javascript">
-        var text = ''
-        setInterval(function() {
+        $('#b_render').prop("disabled", false);
+        $('#e_render').prop("disabled", true);
+
+        // 启动渲染进程
+        function beginRendering() {
+            console.log('Starting rendering process...')
             $.ajax({
-                type: 'GET',
-                url: '/api/get-message-queue',
+                type: 'POST',
+                url: '/api/start-rendering',
                 dataType: 'json',
                 data: {},
-                success: function(res) {
-                    if (res.length != 0) {
-                        new_html = [];
-                        for (var i = 0; i < res.length; i++) {
-                            item = res[i];
-                            color ='white';
-                            if (res[i]['level'] == 1) {
-                                color = '#70d470'
-                            }
-                            if (res[i]['level'] == 2) {
-                                color = '#d4d470'
-                            }
-                            if (res[i]['level'] == 1) {
-                                color = '#7070d4'
-                            }
-                            new_html.push($(`<p style="color:${color}">${res[i]['message']}</p>`));
-                        }
-                        // console.log(new_html);
-                        $('#console').empty();
-                        for (var i = 0; i < new_html.length; ++i) {
-                            $('#console').append(new_html[i]);
-                        }
-                    }
+                success: function (res) {
+                    $('#b_render').prop("disabled", true);
+                    $('#e_render').prop("disabled", false);
+                    console.log(res.data)
+                    console.log('Rendering process started!');
                 },
-                error: function() {
-                    console.log('error!')
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('错误：' + errorThrown);
                 }
             });
+        };
+
+        function endRendering() {
+            console.log('Interrupting rendering process...');
+            $.ajax({
+                type: 'GET',
+                url: '/api/end-rendering',
+                dataType: 'json',
+                data: {},
+                success: function (res) {
+                    $('#b_render').prop("disabled", false);
+                    $('#e_render').prop("disabled", true);
+                    console.log(res.data)
+                    console.log('Rendering process terminated!');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('错误：' + errorThrown);
+                }
+            });
+        }
+
+        // 后台信息轮询
+        let COLOR_INFO = '#70D470'
+        let COLOR_WARN = '#D4D470'
+        let COLOR_ERROR = '#D47070'
+        setInterval(function () {
+            try {
+                $.ajax({
+                    type: 'GET',
+                    url: '/api/get-message-queue',
+                    dataType: 'json',
+                    data: {},
+                    success: function (res) {
+                        if (res.length != 0) {
+                            new_html = [];
+                            for (var i = 0; i < res.length; i++) {
+                                item = res[i];
+                                color = 'white';
+                                if (res[i]['level'] == 1) {
+                                    color = COLOR_INFO
+                                }
+                                if (res[i]['level'] == 2) {
+                                    color = COLOR_WARN
+                                }
+                                if (res[i]['level'] == 3) {
+                                    color = COLOR_ERROR
+                                }
+                                new_html.push($(`<p style="color:${color}">${res[i]['message']}</p>`));
+                            }
+                            // console.log(new_html);
+                            $('#console').empty();
+                            for (var i = 0; i < new_html.length; ++i) {
+                                $('#console').append(new_html[i]);
+                            }
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log('错误：' + errorThrown);
+                    }
+                });
+            }
+            catch (e) {
+                console.log('错误：' + e);
+            }
+
             // console.log('hao!');
         }, 1000);
     </script>
 </body>
+
 </html>

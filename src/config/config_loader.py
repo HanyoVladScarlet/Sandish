@@ -2,7 +2,7 @@
 import json
 import os
 
-from utils.logger import error, log, info
+from nefx.logger import error, log, info
 
 __all__ = ['get_config']
 
