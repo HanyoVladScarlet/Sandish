@@ -1,0 +1,3 @@
+let COLOR_INFO = '#70D470';
+let COLOR_WARN = '#D4D470';
+let COLOR_ERROR = '#D47070';

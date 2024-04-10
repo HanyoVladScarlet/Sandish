@@ -1,11 +1,9 @@
 # 暂时先这样实现了
 from nefx.extension_methods import extension_method
-from nefx.night_edge import NefxCoreBuilder
 import os
 import time
-# import requests
 
-import queue
+
 from typing import Callable
 from threading import Thread
 
@@ -17,7 +15,7 @@ enable_info = True
 if os.name == 'nt':
     os.system('')
 
-message_queue = queue.Queue()
+
 Q_SIZE = 10
 
 
@@ -28,10 +26,6 @@ R_BEGIN = '\033[0;31;40m'
 Y_BEGIN = '\033[0;33;40m'
 COLOR_END = '\033[0m'
 
-@extension_method
-def use_logger(self: NefxCoreBuilder, max_size=10):
-    Q_SIZE = max_size
-    return self
 
 
 def error(text, enable_remote=True):
@@ -128,7 +122,11 @@ def get_formatted_text(text, level):
     return text
 
 
+# TODO: 之后使用线程池实现
 def on_message(message):
+    '''
+    这里的message参数是一个字典, 而不是json.
+    '''
     global handlers
     # print(f'Handler count: {len(handlers)}')
     for h in handlers:
@@ -138,6 +136,10 @@ def on_message(message):
 
 
 def add_event_handler(func: Callable):
+    '''
+    eventhandler要求的函数签名, 有且只有一个字典类型的参数。
+    在定义add_event_handler时, 要注意函数签名.
+    '''
     global handlers
     handlers.append(func)
     return
@@ -147,16 +149,6 @@ def remove_event_handler(func: Callable):
     while func in handlers:
         handlers.remove(func)
     return
-
-
-def get_message_queue():
-    '''
-    返回一个队列, 其数据结构格式为:
-    消息id: id
-    verbose_level: level
-    message_content: message
-    '''
-    return message_queue
 
 
 if __name__ == '__main__':

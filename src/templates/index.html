@@ -5,114 +5,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blender Flask Console</title>
-    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.1/css/bootstrap-grid.css" rel="stylesheet">
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.net/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.net/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.net/popper.js/1.15.0/umd/popper.min.js"></script>
+    <script script src="https://cdn.staticfile.net/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="../static/index.css">
 </head>
 
 <body>
-    <div class="containermd">
-        <div class="row">
-            <div class="col-sm"></div>
-            <div class="col-sm">
-                <h1>Console</h1>
-                <div id="console">
+    <header>
+        <div id="navbar" class="navbar navbar-expand-lg shadow-lg">
+            <a class="navbar-brand" href="#">
+                <img src="../static/imgs/logo.jpg" width="50" height="50" alt="">
+            </a>
+            <h1>S·A·N·D·I·S·H</h1>
+        </div>
+    </header>
+    <main>
+        <div id="main-box" class="container-fluid d-flex justify-content-center">
+            <div class="col"></div>
+            <div class="col-10">
+                <div class="row">
+                    <div class="col"></div>
+                    <div class="col-8">
+                        <div class="row d-flex justify-content-center" style="margin-top: 20px">
+                            <div class="shadow-lg text-center">
+                                <img id="img-front" src="../static/imgs/default_front.jpg" alt="">
+                                <div class="col stripe align-middle">
+                                    图片输出<span id="img-output-span"></span>
+                                </div>
+                            </div>
+                            <div class="w-100"></div>
+                            <div class="col text-center">
+                                <button disabled type="button" id="b_render" class="btn btn-dark btn-bpy"
+                                    onclick="beginRendering()">开始渲染</button>
+                                <button disabled type="button" id="e_render" class="btn btn-dark btn-bpy"
+                                    onclick="endRendering()">中止渲染</button>
+                                <div class="w-100"></div>
+                            </div>
+                            <div id="console-box" class="container">
+                                <div class="mb-3">
+                                    <h2 class="text-center">🔻Console</h2>
+                                    <div id="console" class="overflow-auto"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col"></div>
                 </div>
             </div>
-            <div class="col-sm"></div>
+            <div class="col"></div>
         </div>
-        <button disabled id="b_render" onclick="beginRendering()">开始渲染</button>
-        <button disabled id="e_render" onclick="endRendering()">中止渲染</button>
-    </div>
-    <script type="text/javascript">
-        $('#b_render').prop("disabled", false);
-        $('#e_render').prop("disabled", true);
+    </main>
 
-        // 启动渲染进程
-        function beginRendering() {
-            console.log('Starting rendering process...')
-            $.ajax({
-                type: 'POST',
-                url: '/api/start-rendering',
-                dataType: 'json',
-                data: {},
-                success: function (res) {
-                    $('#b_render').prop("disabled", true);
-                    $('#e_render').prop("disabled", false);
-                    console.log(res.data)
-                    console.log('Rendering process started!');
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.log('错误：' + errorThrown);
-                }
-            });
-        };
-
-        function endRendering() {
-            console.log('Interrupting rendering process...');
-            $.ajax({
-                type: 'GET',
-                url: '/api/end-rendering',
-                dataType: 'json',
-                data: {},
-                success: function (res) {
-                    $('#b_render').prop("disabled", false);
-                    $('#e_render').prop("disabled", true);
-                    console.log(res.data)
-                    console.log('Rendering process terminated!');
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.log('错误：' + errorThrown);
-                }
-            });
-        }
-
-        // 后台信息轮询
-        let COLOR_INFO = '#70D470'
-        let COLOR_WARN = '#D4D470'
-        let COLOR_ERROR = '#D47070'
-        setInterval(function () {
-            try {
-                $.ajax({
-                    type: 'GET',
-                    url: '/api/get-message-queue',
-                    dataType: 'json',
-                    data: {},
-                    success: function (res) {
-                        if (res.length != 0) {
-                            new_html = [];
-                            for (var i = 0; i < res.length; i++) {
-                                item = res[i];
-                                color = 'white';
-                                if (res[i]['level'] == 1) {
-                                    color = COLOR_INFO
-                                }
-                                if (res[i]['level'] == 2) {
-                                    color = COLOR_WARN
-                                }
-                                if (res[i]['level'] == 3) {
-                                    color = COLOR_ERROR
-                                }
-                                new_html.push($(`<p style="color:${color}">${res[i]['message']}</p>`));
-                            }
-                            // console.log(new_html);
-                            $('#console').empty();
-                            for (var i = 0; i < new_html.length; ++i) {
-                                $('#console').append(new_html[i]);
-                            }
-                        }
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.log('错误：' + errorThrown);
-                    }
-                });
-            }
-            catch (e) {
-                console.log('错误：' + e);
-            }
-
-            // console.log('hao!');
-        }, 1000);
-    </script>
+    <script src="../static/js/index.js"></script>
 </body>
 
 </html>

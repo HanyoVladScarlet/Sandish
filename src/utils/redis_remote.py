@@ -1,21 +1,11 @@
 import json
 import redis
 import time
-import sys
+
 
 from nefx.logger import add_event_handler, get_formatted_text, error
 from nefx.extension_methods import extension_method
 from nefx.night_edge import NefxCoreBuilder
-from threading import Thread
-
-
-@extension_method
-def use_redis(self: NefxCoreBuilder):
-    '''
-    使用redis获得输出
-    '''
-    
-    return self
 
 
 MESSAGE_QUEUE = 'message_queue'
@@ -50,6 +40,7 @@ class RedisClient():
 
 
     def r_query(self, message):
+        '''向redis服务器发送一条消息'''
         item = json.dumps(message)
         self.r.zadd(MESSAGE_QUEUE, {str(item): time.time()})
 

@@ -1,3 +1,43 @@
-.console {
-    height: 800px;
+main {
+    color: aliceblue;
+    background-color: rgb(37, 12, 5);
+}
+
+
+#navbar {
+    color: aliceblue;
+    background-color: rgb(56, 11, 7);
+}
+
+
+#img-front {
+    width: 100%;
+    border: 2px solid rgb(50, 238, 25);
+}
+
+.stripe {
+    background-color: rgb(92, 8, 8);
+    height: 32px;
+    border: 2px solid rgb(204, 30, 30);
+}
+
+#main-box {
+    width: 90%;
+    background-image: url('../static/imgs/cover-bgi.png');
+    background-size: cover;
+}
+
+#console-box {
+
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+}
+
+#console {
+    margin: 5px;
+    height: 450px;
+}
+
+.btn-bpy {
+    margin: 5px auto;
 }

@@ -1,22 +1,26 @@
 # 此文件用于创建 Flask 服务器
 # 由此文件启用子进程来调用 Blender
 
-from flask import Flask, request, render_template
-from utils.redis_remote import RedisClient
 import json
 import os
-import subprocess
 import traceback
-import signal
-import time
-from nefx.logger import info, warn
 
 
-from nefx.logger import get_formatted_text
+from flask import Flask, request, render_template
+from flask_sse import sse
+from flask_socketio import SocketIO
+from utils.redis_remote import RedisClient
+from utils.blender_process_manager import BlenderProcessManager
 
 
 app = Flask(__name__)
 app.config['SECTRET_KEY'] = 'secret!'
+app.config['DEBUG'] = True
+app.config['REDIS_URL'] = 'redis://:114514@localhost:6379/0'
+
+
+# sse 注册.
+app.register_blueprint(sse, url_prefix='/api/stream')
 
 
 G_BEGIN = '\033[0;32;40m'
@@ -28,47 +32,7 @@ COLOR_END = '\033[0m'
 Q_SIZE = 10
 
 
-blender_pid = -1
-
-
 rc = RedisClient(flush=True)
-
-
-class BlenderProcessManager():
-    '''
-    Blender子进程管理, 监视Blender进程数量,
-    防止出现子进程数量异常报错
-    '''
-    _instance = None
-
-    def __init__(self) -> None:
-        self.p = None
-
-
-    def start_rendering(self):
-        if self.p is not None:
-            warn('未启成功启动, 已经存在正在运行的Blender进程!')
-            return
-        self.p = subprocess.Popen(r'blender.exe blend_files\base\base.blend -b -P src/blender_codes/main.py')
-        info('Blender正在运行!')
-        return 
-
-
-    def end_rendering(self):
-        if self.p is None:
-            warn('中止进程失败, 没有正在运行的Blender进程! ')
-            return
-        self.p.terminate()
-        self.p = None
-        info('Blender程序已退出! ')
-        return
-
-
-    @staticmethod
-    def get_bpm():
-        if BlenderProcessManager._instance == None:
-            BlenderProcessManager._instance = BlenderProcessManager()
-        return BlenderProcessManager._instance
 
 
 @app.route('/', methods=['GET'])
@@ -82,7 +46,6 @@ def end_rendering():
     return '{}'
 
 
-
 @app.route('/api/start-rendering', methods=['POST'])
 def start_rendering():
     data = request.data
@@ -93,8 +56,30 @@ def start_rendering():
 @app.route('/api/get-message-queue', methods=['GET'])
 def update_message_queue():
     l = rc.get_messages()
+    l.reverse()
     res = json.dumps(l)
     return res
+
+
+@app.route('/api/push-one-message', methods=['POST'])
+def push_one_message():
+    # ip地址过滤, 在不涉及集群的情况下, 暂时如此实现
+    if request.remote_addr != '127.0.0.1':
+        return '臭外地的来百京儿要饭来啦!'
+    data = json.loads(request.data)
+    print(data)
+    if 'event_type' not in data:
+        return '未指定事件类型'
+    try:
+        sse.publish(data, type=data['event_type'])
+    except Exception as e:
+        print(e.with_traceback())
+    return '{}'
+
+
+@app.route('/api/stream')
+def stream():
+    return sse.stream()
 
 
 def main():
@@ -105,20 +90,10 @@ def main():
         os._exit(-1)
 
 
-# def message_out():
-#     for i in range(20):
-#         message = {
-#             'timestamp': time.time(),
-#             'message': f'information{i}',
-#             'level': 2
-#         }
-#         item = json.dumps(message)
-#         rc.r.zadd('message_queue', {item: time.time()})
-#     print(rc.r.zrange('message_queue', 0, -1, withscores=True))
-#         # info(f'This is message {i}!')
-
-
 if __name__ == '__main__':
     # start_rendering_process()
-    main()
-    # message_out()
+    try:
+        main()
+    except KeyboardInterrupt as e:
+        BlenderProcessManager.get_bpm().end_rendering()
+        print(e.__traceback__)

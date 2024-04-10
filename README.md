@@ -16,6 +16,20 @@ Flask 服务器存在的首要目的是为了避免 Blender Commandline 输出�
 
 Flask 将作为之后程序的入口，包括数据集生成和目标检测两个部分。
 
+Flask 服务器将通过 Redis 实现与 Blender 进程的通讯。
+
+以下是在 Docker 部署 Redis 容器的命令。
+
+```dotnetcli
+docker run --restart=always --log-opt max-size=100m --log-opt max-file=2 -p 6379:6379 --name myredis -v C:/Users/hanyo/Documents/GitHub/Sandish/redis/myredis/myredis.conf:/etc/redis/redis.conf -v C:/Users/hanyo/Documents/GitHub/Sandish/redis/myredis/data:/data -d redis redis-server /etc/redis/redis.conf  --appendonly yes  --requirepass 114514
+```
+
+服务器的消息推送采用了 `flask_sse`，这个组件同样依赖于 `Redis`，采用事件/触发器模式替代原来的前端服务器轮询模式，主动向前端发送事件更新消息。
+
+> 采用事件订阅模式单纯是为了避免轮询带来的资源消耗。
+
+在网页初始化时，会通过服务器的接口请求 `Redis` 当中的数据来获得服务器当前的状态信息。
+
 ### 程序结构
 
 当前的 Workflow 为主要包括三大部分：
