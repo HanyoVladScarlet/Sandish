@@ -163,3 +163,4 @@ cython_debug/
 outputs/
 config/*.json
 temp_codes/
+redis/*
