@@ -68,7 +68,7 @@ class BlenderPythonScript():
         '''
         运行Blender脚本.
         '''
-        info(f'开始运行Blender脚本, [blender_pid: {os.getpid}].')
+        info(f'开始运行Blender脚本, [blender_pid: {os.getpid()}].')
         # t = Thread(target=self.get_event_loop)
         # t.start()
         # asyncio.run(self.get_event_loop())

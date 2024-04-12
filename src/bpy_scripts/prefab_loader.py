@@ -213,6 +213,12 @@ def load_sand_volume():
 # TODO: 针对物体散布模块做针对性重构
 def instantiate_all():
     instance_col = get_instance_col()
+    # 清除全部的实例对象.
+    for col in instance_col.children:
+        bpy.data.collections.remove(col)
+    for o in instance_col.all_objects:
+        bpy.data.objects.remove(o)
+    # 获得基因原体.
     target_col = bpy.data.collections.get('target')
     count = config.get_object_count()
     for tars in target_col.children:
