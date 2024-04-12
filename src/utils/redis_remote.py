@@ -4,8 +4,6 @@ import time
 
 
 from nefx.logger import add_event_handler, get_formatted_text, error
-from nefx.extension_methods import extension_method
-from nefx.night_edge import NefxCoreBuilder
 
 
 MESSAGE_QUEUE = 'message_queue'

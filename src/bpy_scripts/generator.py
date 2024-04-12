@@ -5,6 +5,8 @@ import math
 import config as config
 import bpy_extras
 from mathutils import Vector
+from nefx.logger import info
+from datetime import datetime as dt
 
 
 import bpy_scripts.prefab_loader as pfl
@@ -26,13 +28,28 @@ class SampleGenerator():
 
 
     def output_one(self):
-        ''''''
+        '''
+        渲染一张图像, 并且返回渲染结果信息.
+        '''
+        res = {}
         time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
-        # 输出图像
+
+        # image 部分
         name = f'{self.output_path_base}/dataset/sample_{time_str}.png'
+        t_node_begin = dt.now()
         self.render_one(name)
+        t_node_post_render = dt.now()
+        res['path_image'] = name
+        res['time_image'] = t_node_post_render - t_node_begin
+
+        # label 部分
         name = f'{self.output_path_base}/dataset/sample_{time_str}.txt'
         self.label_one(name)
+        t_node_post_label = dt.now()
+        res['path_label'] = name
+        res['time_label'] = t_node_post_label - t_node_post_label
+
+        return res
 
 
     def initialize(self):

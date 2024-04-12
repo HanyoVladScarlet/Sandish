@@ -1,17 +1,16 @@
 // import '../js/constants'
-
-
-
 let COLOR_INFO = '#70D470';
 let COLOR_WARN = '#D4D470';
 let COLOR_ERROR = '#D47070';
 
 
+// 根据变量作用域的特性, 谨防在函数内部重新显式声明此全局变量.
+let view_data = {}
+
 initialize();
 
-
 let source = new EventSource('/api/stream');
-
+// let ws = new WebSocket('ws://localhost/api/ws');
 
 // 后续的消息更新获取通过server推送的方式.
 source.addEventListener('console_message', function(event) {
@@ -29,17 +28,35 @@ source.addEventListener('console_message', function(event) {
         color_hash = COLOR_ERROR
     }
     html = `<span style="color:${color_hash}">${data['message']}</span><br/>`;
-    $('#console').append(html);
+    $('#console').prepend(html);
 });
 
 
 // 监视属性变化
-source.addEventListener('property_change', function(event){
+source.addEventListener('update_slow', function(event){
     let data = JSON.parse(event.data);
-})
+    // 更新view_data当中的值.
+    for(var key in data) {
+        view_data[key] = data[key];
+    }
+    updateSlow();
+});
 
 
+/**
+ * 慢更新, 用于更新 view_data 中更新频率不会很高的那部分.
+**/
+function updateSlow() {
+    // 这里是要更新的内容.
+    updateButtons();
+}
 
+
+function updateButtons() {
+    var flag = view_data['exists_blender'] == undefined
+    $('#b_render').prop("disabled", !flag);
+    $('#e_render').prop("disabled", flag);
+}
 
 
 function updateOutputImage() {
@@ -119,6 +136,9 @@ function endRendering() {
 };
 
 
+/**
+ * 在初始化时, 使用此函数来获得缓存的控制台历史信息.
+**/
 function getMessageQueue() {
     try {
         $.ajax({
@@ -141,13 +161,11 @@ function getMessageQueue() {
 };
 
 
-
 // 用于初始化组件
 // 1. 获取当前服务器状态, 包括历史的console_log;
 // 2. 初始化html组件状态, 比如一些按钮的enable_status等;
 function initialize() {
-    $('#b_render').prop("disabled", false);
-    $('#e_render').prop("disabled", true);
+    updateSlow()
     getMessageQueue();
 }
 

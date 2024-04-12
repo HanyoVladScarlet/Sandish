@@ -1,10 +1,13 @@
 import subprocess
+import traceback
 
 
 from nefx.logger import info, warn
 from nefx.secret import get_random_combination
 from typing import Callable
 from flask_sse import sse
+
+from utils.redis_remote import RedisClient
 
 
 class BlenderProcessManager():
@@ -19,44 +22,50 @@ class BlenderProcessManager():
         self.p = None
         self._blender_token = None
 
-
     @property
-    def blender_token(self):
-        '''
-        返回一个确认 Blender 进程
-        '''
-        return self._blender_token
+    def exists_blender_process(self):
+        return self.p is not None
 
 
     def start_rendering(self):
-        if self.p is not None:
-            warn('未启成功启动, 已经存在正在运行的Blender进程!')
-            return
-        self._blender_token = get_random_combination()
-        # 在这里将blendertoken以命令行形式传递
-        self.p = subprocess.Popen(r'blender.exe blend_files\base\base.blend -b -P src/bpy_scripts/main.py')
-        info('Blender正在运行!')
-        return 
+        try:
+            if self.p is not None:
+                warn('未启成功启动, 已经存在正在运行的Blender进程!')
+                return
+            self._blender_token = get_random_combination()
+            self.p = subprocess.Popen(r'blender.exe blend_files\base\base.blend -b -P src/bpy_scripts/main.py')
+            info('Blender正在运行!')
+            return True
+        except Exception as e:
+            print(traceback.format_exc())
+            print(e)
+            return False
 
 
     def end_rendering(self):
         '''
         结束渲染进程.
         '''
-        if self.p is None:
-            warn('中止进程失败, 没有正在运行的Blender进程! ')
-            return
-        self.p.terminate()
-        self.p = None
-        self._blender_token = None
-        warn('Blender程序已退出! ')
-        return
-
+        try:
+            if self.p is None:
+                warn('中止进程失败, 没有正在运行的Blender进程! ')
+                return
+            self.p.terminate()
+            # 从redis中清除blender进程.
+            self.p = None
+            self._blender_token = None
+            warn('Blender程序已退出! ')
+            return True
+        except Exception as e:
+            print(traceback.format_exc())
+            print(e)
+            return False
 
     @staticmethod
     def get_bpm():
         '''
-        单例模式, 获得实例对象
+        单例模式, 获得实例对象.
+        :return: <BlenderProcessManager>
         '''
         if BlenderProcessManager._instance == None:
             BlenderProcessManager._instance = BlenderProcessManager()

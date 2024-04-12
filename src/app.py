@@ -8,7 +8,7 @@ import traceback
 
 from flask import Flask, request, render_template
 from flask_sse import sse
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 from utils.redis_remote import RedisClient
 from utils.blender_process_manager import BlenderProcessManager
 
@@ -21,6 +21,7 @@ app.config['REDIS_URL'] = 'redis://:114514@localhost:6379/0'
 
 # sse 注册.
 app.register_blueprint(sse, url_prefix='/api/stream')
+socketio = SocketIO(app, async_mode='threading') 
 
 
 G_BEGIN = '\033[0;32;40m'
@@ -42,21 +43,22 @@ def hello_world():
 
 @app.route('/api/end-rendering', methods=['GET'])
 def end_rendering():
-    BlenderProcessManager.get_bpm().end_rendering()
+    if BlenderProcessManager.get_bpm().end_rendering():
+        sse.publish({'exists_blender': False}, 'update_slow')
     return '{}'
 
 
 @app.route('/api/start-rendering', methods=['POST'])
 def start_rendering():
     data = request.data
-    BlenderProcessManager.get_bpm().start_rendering()
+    if BlenderProcessManager.get_bpm().start_rendering():
+        sse.publish({'exists_blender': True}, 'update_slow')
     return '{}'
 
 
 @app.route('/api/get-message-queue', methods=['GET'])
 def update_message_queue():
     l = rc.get_messages()
-    l.reverse()
     res = json.dumps(l)
     return res
 
@@ -73,7 +75,8 @@ def push_one_message():
     try:
         sse.publish(data, type=data['event_type'])
     except Exception as e:
-        print(e.with_traceback())
+        print(traceback.format_exc())
+        print(e)
     return '{}'
 
 
@@ -82,11 +85,27 @@ def stream():
     return sse.stream()
 
 
-def main():
+@socketio.on('message')
+def message_handler(message):
+    '''
+    ⚠注意: message是一个json字符串.
+    '''
     try:
-        app.run(host='0.0.0.0', port=11133)
+        data = json.loads(message)
+        sse.publish(data, type='update_slow')
     except Exception as e:
         print(traceback.format_exc())
+        print(e)
+
+
+def main():
+    try:
+        # 注意flask默认单线程, 如果存在异步请求则可能造成线程阻塞
+        socketio.run(app, host='0.0.0.0', port=11133)
+        # app.run(host='0.0.0.0', port=11133, threaded=True)
+    except Exception as e:
+        print(traceback.format_exc())
+        print(e)
         os._exit(-1)
 
 
