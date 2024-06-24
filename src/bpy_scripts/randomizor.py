@@ -19,8 +19,11 @@ def randomize_materials():
     instance_col =  pfl.get_instance_col()
     materials = bpy.data.materials
     objects = instance_col.all_objects
+    max = len(pfl.get_materials()) - 1
+    if max == 0:
+        return
     for o in objects:
-        ran_idx = random.randint(0, len(pfl.get_materials()) - 1)
+        ran_idx = random.randint(0, max)
         mat = materials.get(pfl.get_materials()[ran_idx])
         o.data.materials[0] = mat
 

@@ -162,5 +162,4 @@ cython_debug/
 # 新增的项目👇
 outputs/
 config/*.json
-temp_codes/
 redis/*
